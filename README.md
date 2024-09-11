@@ -22,9 +22,6 @@
 3. Click the "Start Countdown" button.
 4. The timer will start and display the remaining time in hours, minutes, and seconds until the target time is reached.
 
-## Example
-
-![TimeTarget Example](example.png)
 
 ## License
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
