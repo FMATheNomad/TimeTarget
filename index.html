@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TimeTarget</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .container {
+        font-family: "Roboto", system-ui;
+        margin-top: 100px;
+        margin-bottom: 100px;
+      }
+      .brand {
+        font-family: "Share Tech Mono", monospace;
+      }
+      #countdown {
+        font-family: "Share Tech Mono", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      class="container d-flex flex-column justify-content-center align-items-center"
+    >
+      <div class="row mt-2">
+        <div class="col text-center">
+          <h1 class="display-4 brand">TimeTarget</h1>
+          <small
+            ><span class="text-danger">!Note:</span> Click clock icon if you
+            want to set based on clock time.</small
+          >
+          <p class="lead">Set your target time and and stay productive!</p>
+        </div>
+      </div>
+
+      <!-- Input Time Section -->
+      <div class="row mb-4">
+        <div class="col">
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <label for="time-input" class="form-label"
+                  >Set Target Time (HH:MM)</label
+                >
+                <input
+                  type="time"
+                  id="time-input"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="d-flex justify-content-center gap-2 mb-2">
+                <button class="btn btn-outline-primary" onclick="startTimer()">
+                  Start Countdown
+                </button>
+                <button
+                  class="btn btn-outline-secondary"
+                  onclick="resetTimer()"
+                >
+                  Reset Timer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer Display Section -->
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-body text-center">
+              <div id="countdown" class="display-1">
+                <span id="hours">00</span>:<span id="minutes">00</span>:<span
+                  id="seconds"
+                  >00</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      let interval; // Variabel global untuk menyimpan referensi interval
+
+      function startTimer() {
+        const timeInput = document.getElementById("time-input").value;
+
+        if (!timeInput) {
+          alert("Please enter a valid time!");
+          return;
+        }
+
+        const [targetHour, targetMinute] = timeInput.split(":").map(Number);
+
+        let now = new Date();
+        let targetTime = new Date();
+        targetTime.setHours(targetHour, targetMinute, 0, 0);
+
+        if (targetTime <= now) {
+          targetTime.setDate(targetTime.getDate() + 1);
+        }
+
+        // Jika ada timer yang sedang berjalan, hentikan terlebih dahulu
+        if (interval) {
+          clearInterval(interval);
+        }
+
+        interval = setInterval(() => {
+          const currentTime = new Date().getTime();
+          const timeLeft = targetTime - currentTime;
+
+          if (timeLeft <= 0) {
+            clearInterval(interval);
+            interval = null; // Reset interval
+            document.getElementById("countdown").innerHTML = "Time's up!";
+            return;
+          }
+
+          const hours = Math.floor(
+            (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (timeLeft % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+          document.getElementById("hours").innerHTML = String(hours).padStart(
+            2,
+            "0"
+          );
+          document.getElementById("minutes").innerHTML = String(
+            minutes
+          ).padStart(2, "0");
+          document.getElementById("seconds").innerHTML = String(
+            seconds
+          ).padStart(2, "0");
+        }, 1000);
+      }
+
+      function resetTimer() {
+        if (interval) {
+          clearInterval(interval);
+          interval = null; // Reset interval
+        }
+        // Reset countdown display
+        document.getElementById("countdown").innerHTML =
+          "<span id='hours'>00</span>:<span id='minutes'>00</span>:<span id='seconds'>00</span>";
+        // Reset input field (opsional)
+        document.getElementById("time-input").value = "";
+      }
+    </script>
+  </body>
+</html>
