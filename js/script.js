@@ -31,6 +31,8 @@ let interval; // Variabel global untuk menyimpan referensi interval
             clearInterval(interval);
             interval = null; // Reset interval
             document.getElementById("countdown").innerHTML = "Time's up!";
+            document.getElementById("alarm-sound").play(); // Mainkan suara alarm
+            document.getElementById("stop-alarm-btn").style.display = "block"; // Tampilkan tombol stop alarm
             return;
           }
 
@@ -65,4 +67,11 @@ let interval; // Variabel global untuk menyimpan referensi interval
           "<span id='hours'>00</span>:<span id='minutes'>00</span>:<span id='seconds'>00</span>";
         // Reset input field (opsional)
         document.getElementById("time-input").value = "";
+      }
+
+      function stopAlarm() {
+        const alarmSound = document.getElementById("alarm-sound");
+        alarmSound.pause(); // Hentikan suara
+        alarmSound.currentTime = 0; // Reset posisi audio ke awal
+        document.getElementById("stop-alarm-btn").style.display = "none"; // Sembunyikan tombol
       }
