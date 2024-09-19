@@ -33,6 +33,7 @@ function startTimer() {
       document.getElementById("countdown").innerHTML = "Time's up!";
       document.getElementById("alarm-sound").play(); // Mainkan suara alarm
       document.getElementById("stop-alarm-btn").style.display = "block"; // Tampilkan tombol stop alarm
+
       return;
     }
 
@@ -61,6 +62,7 @@ function resetTimer() {
   alarmSound.currentTime = 0;
   document.getElementById("stop-alarm-btn").style.display = "none";
 }
+
 
 function stopAlarm() {
   resetTimer(); // Panggil resetTimer untuk mengembalikan tampilan ke kondisi awal

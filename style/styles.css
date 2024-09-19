@@ -1,0 +1,49 @@
+.container {
+  font-family: "Roboto", system-ui;
+  margin-top: 100px;
+  margin-bottom: 100px;
+}
+.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+.dark-mode .card {
+  background-color: #1e1e1e;
+}
+.brand {
+  font-family: "Share Tech Mono", monospace;
+}
+@media (max-width: 768px) {
+  .note-on-desktop {
+    display: none;
+  }
+}
+#countdown {
+  font-family: "Share Tech Mono", monospace;
+}
+#countdown-controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+#countdown-controls button {
+  width: 35px; /* Lebar tombol */
+  height: 35px; /* Tinggi tombol */
+  font-size: 15px; /* Ukuran ikon */
+  padding: 5px; /* Jarak dalam */
+}
+#countdown.fullscreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  font-size: 10vw; /* Sesuaikan ukuran teks dengan viewport */
+}
+#exit-fullscreen {
+  display: none; /* Disembunyikan secara default */
+}
+
+#countdown.fullscreen #exit-fullscreen {
+  display: block; /* Ditampilkan saat dalam mode fullscreen */
+}

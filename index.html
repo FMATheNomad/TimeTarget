@@ -16,52 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Share+Tech+Mono&display=swap"
       rel="stylesheet"
     />
-    <style>
-      .container {
-        font-family: "Roboto", system-ui;
-        margin-top: 100px;
-        margin-bottom: 100px;
-      }
-      .dark-mode {
-        background-color: #121212;
-        color: #ffffff;
-      }
-      .dark-mode .card {
-        background-color: #1e1e1e;
-      }
-      .brand {
-        font-family: "Share Tech Mono", monospace;
-      }
-      #countdown {
-        font-family: "Share Tech Mono", monospace;
-      }
-      #countdown-controls {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-      }
-      #countdown-controls button {
-        width: 35px; /* Lebar tombol */
-        height: 35px; /* Tinggi tombol */
-        font-size: 15px; /* Ukuran ikon */
-        padding: 5px; /* Jarak dalam */
-      }
-      #countdown.fullscreen {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100vw;
-        height: 100vh;
-        font-size: 10vw; /* Sesuaikan ukuran teks dengan viewport */
-      }
-      #exit-fullscreen {
-        display: none; /* Disembunyikan secara default */
-      }
-
-      #countdown.fullscreen #exit-fullscreen {
-        display: block; /* Ditampilkan saat dalam mode fullscreen */
-      }
-    </style>
+    <link rel="stylesheet" href="style/styles.css" />
   </head>
   <body>
     <div
@@ -79,10 +34,9 @@
               <i id="theme-icon" class="fas fa-sun"></i>
             </button>
           </h1>
-          <small
-            ><span class="text-danger">!Note:</span>
-            <span class="text-success">(If you using Google Chrome)</span>
-            click clock icon if you want to set the countdown timer.</small
+          <small class="note-on-desktop"
+            ><span class="text-danger">!Note:</span> Click clock icon if you
+            want to set the countdown timer.</small
           >
           <p class="lead">Set your target time and and stay productive!</p>
         </div>
