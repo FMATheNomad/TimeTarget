@@ -1,6 +1,7 @@
 let interval; // Variabel global untuk menyimpan referensi interval
 let targetTime; // Menyimpan target waktu akhir
 let timeLeftAtPause; // Variabel untuk menyimpan waktu tersisa saat dijeda
+let totalDuration; // Menyimpan durasi total timer
 
 function startTimer() {
   const timeInput = document.getElementById("time-input").value;
@@ -24,74 +25,27 @@ function startTimer() {
   }
 
   // Hitung total durasi dari sekarang sampai target waktu
-  const totalDuration = targetTime - now;
+  totalDuration = targetTime - now;
 
   // Jika ada timer yang sedang berjalan, hentikan terlebih dahulu
   if (interval) {
     clearInterval(interval);
   }
 
-  interval = setInterval(() => {
-    const currentTime = new Date().getTime();
-    const timeLeft = targetTime - currentTime;
-
-    // Hitung persentase progres
-    const progressPercent = ((totalDuration - timeLeft) / totalDuration) * 100;
-
-    // Update lebar progress bar
-    document.getElementById("progress-bar").style.width = `${progressPercent}%`;
-
-    // Jika timer selesai
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      interval = null;
-      document.getElementById("countdown").innerHTML = "Time's up!";
-      document.getElementById("alarm-sound").play();
-      document.getElementById("stop-alarm-btn").style.display = "block";
-      return;
-    }
-
-    // Hitung jam, menit, dan detik yang tersisa
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    // Update tampilan waktu tersisa
-    document.getElementById("hours").innerHTML = String(hours).padStart(2, "0");
-    document.getElementById("minutes").innerHTML = String(minutes).padStart(2, "0");
-    document.getElementById("seconds").innerHTML = String(seconds).padStart(2, "0");
-  }, 1000);
+  interval = setInterval(updateCountdown, 1000);
 }
 
 function updateCountdown() {
   const currentTime = new Date().getTime();
   const timeLeft = targetTime - currentTime;
 
-  // Jika countdown sudah selesai
   if (timeLeft <= 0) {
     clearInterval(interval);
     interval = null; // Reset interval
     document.getElementById("countdown").innerHTML = "Time's up!";
     document.getElementById("alarm-sound").play(); // Mainkan suara alarm
     document.getElementById("stop-alarm-btn").style.display = "block"; // Tampilkan tombol stop alarm
-
-    // Tampilkan notifikasi browser
-    if (Notification.permission === "granted") {
-      new Notification("Time's up!", {
-        body: "Your countdown has finished!",
-        icon: "https://via.placeholder.com/128" // Ganti dengan URL ikon yang Anda inginkan
-      });
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          new Notification("Time's up!", {
-            body: "Your countdown has finished!",
-            icon: "https://via.placeholder.com/128"
-          });
-        }
-      });
-    }
-
+    resetProgressBar(); // Reset progress bar saat timer habis
     return;
   }
 
@@ -100,7 +54,6 @@ function updateCountdown() {
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-  // Update tampilan waktu tersisa
   document.getElementById("hours").innerHTML = String(hours).padStart(2, "0");
   document.getElementById("minutes").innerHTML = String(minutes).padStart(2, "0");
   document.getElementById("seconds").innerHTML = String(seconds).padStart(2, "0");
@@ -108,14 +61,27 @@ function updateCountdown() {
   // Simpan waktu tersisa saat pause
   timeLeftAtPause = timeLeft;
 
-  // Update progress bar
-  const totalDuration = targetTime - (targetTime - timeLeft); // Durasi awal dari timer
+  // Update progress bar dan persentase
   const progressPercent = ((totalDuration - timeLeft) / totalDuration) * 100;
-  document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+  updateProgressBar(progressPercent);
 }
 
+function updateProgressBar(percent) {
+  const progressBar = document.getElementById("progress-bar");
+  progressBar.style.width = `${percent}%`;
+  progressBar.innerHTML = `${Math.round(percent)}%`; // Menampilkan persentase
+}
+
+function resetProgressBar() {
+  const progressBar = document.getElementById("progress-bar");
+  progressBar.style.width = "0%";
+  progressBar.innerHTML = "0%"; // Reset persentase ke 0%
+}
 
 function pauseTimer() {
+  const currentTime = new Date().getTime();
+  timeLeftAtPause = targetTime - currentTime; // Simpan waktu tersisa
+  
   clearInterval(interval); // Hentikan interval
   interval = null;
 
@@ -125,7 +91,8 @@ function pauseTimer() {
 
 function resumeTimer() {
   const currentTime = new Date().getTime();
-  targetTime = new Date(currentTime + timeLeftAtPause); // Tambahkan sisa waktu saat pause ke waktu saat ini
+  targetTime = new Date(currentTime + timeLeftAtPause); // Hitung ulang targetTime berdasarkan waktu tersisa
+  totalDuration = timeLeftAtPause; // Update durasi total berdasarkan waktu tersisa
 
   interval = setInterval(updateCountdown, 1000); // Mulai kembali interval
 
@@ -149,8 +116,8 @@ function resetTimer() {
   alarmSound.pause();
   alarmSound.currentTime = 0;
   document.getElementById("stop-alarm-btn").style.display = "none";
+  resetProgressBar(); // Reset progress bar saat user menekan reset
 }
-
 
 window.addEventListener("DOMContentLoaded", () => {
   const savedTime = localStorage.getItem("targetTime");
@@ -167,6 +134,7 @@ window.addEventListener("DOMContentLoaded", () => {
       targetTime.setDate(targetTime.getDate() + 1);
     }
 
+    totalDuration = targetTime - now; // Hitung durasi total saat memulai ulang
     if (interval) {
       clearInterval(interval); // Hentikan interval yang ada
     }
@@ -180,10 +148,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-
-
 function stopAlarm() {
-  // Hentikan alarm dan sembunyikan tombol stop
   const alarmSound = document.getElementById("alarm-sound");
   alarmSound.pause(); // Hentikan suara alarm
   alarmSound.currentTime = 0; // Kembalikan ke awal
@@ -194,11 +159,9 @@ function stopAlarm() {
 }
 
 function toggleTheme() {
-    document.body.classList.toggle("dark-mode");
+  document.body.classList.toggle("dark-mode");
 
-    // Ubah ikon sesuai mode
   const themeIcon = document.getElementById("theme-icon");
-
   if (document.body.classList.contains("dark-mode")) {
     themeIcon.classList.remove("fa-sun");
     themeIcon.classList.add("fa-moon");
@@ -206,72 +169,69 @@ function toggleTheme() {
     themeIcon.classList.remove("fa-moon");
     themeIcon.classList.add("fa-sun");
   }
-  }
-  
-  function toggleVerticalFullscreen() {
-    const countdownDiv = document.getElementById("countdown");
-  
-    if (!document.fullscreenElement) {
-      countdownDiv.requestFullscreen();
-      countdownDiv.classList.add("fullscreen");
-      document.getElementById("exit-fullscreen").classList.remove("d-none");  // Tampilkan tombol keluar fullscreen
-    } else {
-      document.exitFullscreen();
-      countdownDiv.classList.remove("fullscreen");
-      document.getElementById("exit-fullscreen").classList.add("d-none");  // Sembunyikan tombol keluar fullscreen
-    }
-  }
-  
-  function toggleHorizontalFullscreen() {
-    const countdownDiv = document.getElementById("countdown");
-  
-    if (!document.fullscreenElement) {
-      countdownDiv.requestFullscreen();
-      countdownDiv.classList.add("fullscreen");
-      document.getElementById("exit-fullscreen").classList.remove("d-none");  // Tampilkan tombol keluar fullscreen
-    } else {
-      document.exitFullscreen();
-      countdownDiv.classList.remove("fullscreen");
-      document.getElementById("exit-fullscreen").classList.add("d-none");  // Sembunyikan tombol keluar fullscreen
-    }
-  }
-  
-  window.addEventListener("orientationchange", function() {
-    const countdownDiv = document.getElementById("countdown");
-    
-    if (window.screen.orientation.angle === 90 || window.screen.orientation.angle === -90) {
-      // Layar dalam orientasi horizontal
-      countdownDiv.style.fontSize = "12vh";
-    } else {
-      // Layar dalam orientasi vertikal
-      countdownDiv.style.fontSize = "10vw";
-    }
-  });
-  
-  document.addEventListener("fullscreenchange", function() {
-    const countdownDiv = document.getElementById("countdown");
-  
-    if (!document.fullscreenElement) {
-      countdownDiv.classList.remove("fullscreen");  // Hapus kelas fullscreen saat keluar
-    }
-  });
+}
 
-  document.addEventListener("fullscreenchange", function() {
-    const countdownDiv = document.getElementById("countdown");
-    const exitButton = document.getElementById("exit-fullscreen");
-  
-    if (!document.fullscreenElement) {
-      countdownDiv.classList.remove("fullscreen");  // Hapus kelas fullscreen saat keluar
-      exitButton.classList.add("d-none");  // Sembunyikan tombol keluar fullscreen
-    }
-  });
-  
-  
-  function exitFullscreen() {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
-  }
+function toggleVerticalFullscreen() {
+  const countdownDiv = document.getElementById("countdown");
 
+  if (!document.fullscreenElement) {
+    countdownDiv.requestFullscreen();
+    countdownDiv.classList.add("fullscreen");
+    document.getElementById("exit-fullscreen").classList.remove("d-none");  // Tampilkan tombol keluar fullscreen
+  } else {
+    document.exitFullscreen();
+    countdownDiv.classList.remove("fullscreen");
+    document.getElementById("exit-fullscreen").classList.add("d-none");  // Sembunyikan tombol keluar fullscreen
+  }
+}
+
+function toggleHorizontalFullscreen() {
+  const countdownDiv = document.getElementById("countdown");
+
+  if (!document.fullscreenElement) {
+    countdownDiv.requestFullscreen();
+    countdownDiv.classList.add("fullscreen");
+    document.getElementById("exit-fullscreen").classList.remove("d-none");  // Tampilkan tombol keluar fullscreen
+  } else {
+    document.exitFullscreen();
+    countdownDiv.classList.remove("fullscreen");
+    document.getElementById("exit-fullscreen").classList.add("d-none");  // Sembunyikan tombol keluar fullscreen
+  }
+}
+
+window.addEventListener("orientationchange", function() {
+  const countdownDiv = document.getElementById("countdown");
   
-  
+  if (window.screen.orientation.angle === 90 || window.screen.orientation.angle === -90) {
+    // Layar dalam orientasi horizontal
+    countdownDiv.style.fontSize = "12vh";
+  } else {
+    // Layar dalam orientasi vertikal
+    countdownDiv.style.fontSize = "10vw";
+  }
+});
+
+document.addEventListener("fullscreenchange", function() {
+  const countdownDiv = document.getElementById("countdown");
+
+  if (!document.fullscreenElement) {
+    countdownDiv.classList.remove("fullscreen");  // Hapus kelas fullscreen saat keluar
+  }
+});
+
+document.addEventListener("fullscreenchange", function() {
+  const countdownDiv = document.getElementById("countdown");
+  const exitButton = document.getElementById("exit-fullscreen");
+
+  if (!document.fullscreenElement) {
+    countdownDiv.classList.remove("fullscreen");  // Hapus kelas fullscreen saat keluar
+    exitButton.classList.add("d-none");  // Sembunyikan tombol keluar fullscreen
+  }
+});
+
+
+function exitFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+}
