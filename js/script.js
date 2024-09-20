@@ -34,6 +34,23 @@ function startTimer() {
       document.getElementById("alarm-sound").play(); // Mainkan suara alarm
       document.getElementById("stop-alarm-btn").style.display = "block"; // Tampilkan tombol stop alarm
 
+      // Tampilkan notifikasi browser
+      if (Notification.permission === "granted") {
+        new Notification("Time's up!", {
+          body: "Your countdown has finished!",
+          icon: "https://via.placeholder.com/128" // Ganti dengan URL ikon yang Anda inginkan
+        });
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            new Notification("Time's up!", {
+              body: "Your countdown has finished!",
+              icon: "https://via.placeholder.com/128"
+            });
+          }
+        });
+      }
+
       return;
     }
 
@@ -46,6 +63,14 @@ function startTimer() {
     document.getElementById("seconds").innerHTML = String(seconds).padStart(2, "0");
   }, 1000);
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  // Periksa jika izin belum diberikan
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+});
+
 
 function resetTimer() {
   if (interval) {
@@ -146,3 +171,6 @@ function toggleTheme() {
       document.exitFullscreen();
     }
   }
+
+  
+  
