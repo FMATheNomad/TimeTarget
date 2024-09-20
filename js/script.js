@@ -1,4 +1,6 @@
 let interval; // Variabel global untuk menyimpan referensi interval
+let targetTime; // Menyimpan target waktu akhir
+let timeLeftAtPause; // Variabel untuk menyimpan waktu tersisa saat dijeda
 
 function startTimer() {
   const timeInput = document.getElementById("time-input").value;
@@ -8,15 +10,21 @@ function startTimer() {
     return;
   }
 
+  localStorage.setItem("targetTime", timeInput);  // Simpan di localStorage
+
   const [targetHour, targetMinute] = timeInput.split(":").map(Number);
 
   let now = new Date();
-  let targetTime = new Date();
+  targetTime = new Date(); // Simpan sebagai variabel global
   targetTime.setHours(targetHour, targetMinute, 0, 0);
 
+  // Jika targetTime sudah lewat hari ini, set ke hari berikutnya
   if (targetTime <= now) {
     targetTime.setDate(targetTime.getDate() + 1);
   }
+
+  // Hitung total durasi dari sekarang sampai target waktu
+  const totalDuration = targetTime - now;
 
   // Jika ada timer yang sedang berjalan, hentikan terlebih dahulu
   if (interval) {
@@ -27,56 +35,111 @@ function startTimer() {
     const currentTime = new Date().getTime();
     const timeLeft = targetTime - currentTime;
 
+    // Hitung persentase progres
+    const progressPercent = ((totalDuration - timeLeft) / totalDuration) * 100;
+
+    // Update lebar progress bar
+    document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+
+    // Jika timer selesai
     if (timeLeft <= 0) {
       clearInterval(interval);
-      interval = null; // Reset interval
+      interval = null;
       document.getElementById("countdown").innerHTML = "Time's up!";
-      document.getElementById("alarm-sound").play(); // Mainkan suara alarm
-      document.getElementById("stop-alarm-btn").style.display = "block"; // Tampilkan tombol stop alarm
-
-      // Tampilkan notifikasi browser
-      if (Notification.permission === "granted") {
-        new Notification("Time's up!", {
-          body: "Your countdown has finished!",
-          icon: "https://via.placeholder.com/128" // Ganti dengan URL ikon yang Anda inginkan
-        });
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            new Notification("Time's up!", {
-              body: "Your countdown has finished!",
-              icon: "https://via.placeholder.com/128"
-            });
-          }
-        });
-      }
-
+      document.getElementById("alarm-sound").play();
+      document.getElementById("stop-alarm-btn").style.display = "block";
       return;
     }
 
+    // Hitung jam, menit, dan detik yang tersisa
     const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
+    // Update tampilan waktu tersisa
     document.getElementById("hours").innerHTML = String(hours).padStart(2, "0");
     document.getElementById("minutes").innerHTML = String(minutes).padStart(2, "0");
     document.getElementById("seconds").innerHTML = String(seconds).padStart(2, "0");
   }, 1000);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  // Periksa jika izin belum diberikan
-  if (Notification.permission !== "granted") {
-    Notification.requestPermission();
-  }
-});
+function updateCountdown() {
+  const currentTime = new Date().getTime();
+  const timeLeft = targetTime - currentTime;
 
+  // Jika countdown sudah selesai
+  if (timeLeft <= 0) {
+    clearInterval(interval);
+    interval = null; // Reset interval
+    document.getElementById("countdown").innerHTML = "Time's up!";
+    document.getElementById("alarm-sound").play(); // Mainkan suara alarm
+    document.getElementById("stop-alarm-btn").style.display = "block"; // Tampilkan tombol stop alarm
+
+    // Tampilkan notifikasi browser
+    if (Notification.permission === "granted") {
+      new Notification("Time's up!", {
+        body: "Your countdown has finished!",
+        icon: "https://via.placeholder.com/128" // Ganti dengan URL ikon yang Anda inginkan
+      });
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          new Notification("Time's up!", {
+            body: "Your countdown has finished!",
+            icon: "https://via.placeholder.com/128"
+          });
+        }
+      });
+    }
+
+    return;
+  }
+
+  // Hitung jam, menit, dan detik yang tersisa
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  // Update tampilan waktu tersisa
+  document.getElementById("hours").innerHTML = String(hours).padStart(2, "0");
+  document.getElementById("minutes").innerHTML = String(minutes).padStart(2, "0");
+  document.getElementById("seconds").innerHTML = String(seconds).padStart(2, "0");
+
+  // Simpan waktu tersisa saat pause
+  timeLeftAtPause = timeLeft;
+
+  // Update progress bar
+  const totalDuration = targetTime - (targetTime - timeLeft); // Durasi awal dari timer
+  const progressPercent = ((totalDuration - timeLeft) / totalDuration) * 100;
+  document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+}
+
+
+function pauseTimer() {
+  clearInterval(interval); // Hentikan interval
+  interval = null;
+
+  document.getElementById("pause-timer-btn").style.display = "none";
+  document.getElementById("resume-timer-btn").style.display = "block";
+}
+
+function resumeTimer() {
+  const currentTime = new Date().getTime();
+  targetTime = new Date(currentTime + timeLeftAtPause); // Tambahkan sisa waktu saat pause ke waktu saat ini
+
+  interval = setInterval(updateCountdown, 1000); // Mulai kembali interval
+
+  document.getElementById("resume-timer-btn").style.display = "none";
+  document.getElementById("pause-timer-btn").style.display = "block";
+}
 
 function resetTimer() {
   if (interval) {
     clearInterval(interval);
     interval = null; // Reset interval
   }
+  // Hapus waktu tersimpan dari localStorage
+  localStorage.removeItem("targetTime");
   // Reset countdown display
   document.getElementById("countdown").innerHTML = "<span id='hours'>00</span>:<span id='minutes'>00</span>:<span id='seconds'>00</span>";
   // Reset input field
@@ -89,9 +152,47 @@ function resetTimer() {
 }
 
 
+window.addEventListener("DOMContentLoaded", () => {
+  const savedTime = localStorage.getItem("targetTime");
+  if (savedTime) {
+    document.getElementById("time-input").value = savedTime;
+    
+    // Jika waktu tersimpan, bisa langsung hitung ulang timer
+    const [targetHour, targetMinute] = savedTime.split(":").map(Number);
+    let now = new Date();
+    targetTime = new Date();
+    targetTime.setHours(targetHour, targetMinute, 0, 0);
+
+    if (targetTime <= now) {
+      targetTime.setDate(targetTime.getDate() + 1);
+    }
+
+    if (interval) {
+      clearInterval(interval); // Hentikan interval yang ada
+    }
+
+    interval = setInterval(updateCountdown, 1000); // Mulai kembali interval
+  }
+
+  // Meminta izin notifikasi saat halaman dimuat
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+});
+
+
+
 function stopAlarm() {
+  // Hentikan alarm dan sembunyikan tombol stop
+  const alarmSound = document.getElementById("alarm-sound");
+  alarmSound.pause(); // Hentikan suara alarm
+  alarmSound.currentTime = 0; // Kembalikan ke awal
+
   resetTimer(); // Panggil resetTimer untuk mengembalikan tampilan ke kondisi awal
+  
+  document.getElementById("stop-alarm-btn").style.display = "none"; // Sembunyikan tombol stop alarm
 }
+
 function toggleTheme() {
     document.body.classList.toggle("dark-mode");
 

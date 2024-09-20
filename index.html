@@ -68,6 +68,32 @@
                 >
                   Reset Timer
                 </button>
+                <button
+                  id="pause-timer-btn"
+                  class="btn btn-outline-warning"
+                  onclick="pauseTimer()"
+                >
+                  Pause
+                </button>
+                <button
+                  id="resume-timer-btn"
+                  class="btn btn-outline-success"
+                  onclick="resumeTimer()"
+                  style="display: none"
+                >
+                  Resume
+                </button>
+              </div>
+              <div class="progress">
+                <div
+                  id="progress-bar"
+                  class="progress-bar"
+                  role="progressbar"
+                  style="width: 0%"
+                  aria-valuenow="0"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
               </div>
             </div>
           </div>
