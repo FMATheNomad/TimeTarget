@@ -47,9 +47,9 @@
         <div class="col">
           <div class="card">
             <div class="card-body text-center">
-              <div class="mb-3">
+              <div class="mb-1">
                 <label for="time-input" class="form-label"
-                  >Set Target Time (HH:MM)</label
+                  >Set Based On Clock Timer (HH:MM)</label
                 >
                 <input
                   type="time"
@@ -58,6 +58,38 @@
                   required
                 />
               </div>
+              <span>Or</span>
+              <div class="mb-3">
+                <label for="normal-timer" class="form-label"
+                  >Set Normal Timer (HH:MM:SS)</label
+                >
+                <div class="d-flex gap-2">
+                  <input
+                    type="number"
+                    id="normal-hours"
+                    class="form-control"
+                    placeholder="HH"
+                    min="0"
+                  />
+                  <input
+                    type="number"
+                    id="normal-minutes"
+                    class="form-control"
+                    placeholder="MM"
+                    min="0"
+                    max="60"
+                  />
+                  <input
+                    type="number"
+                    id="normal-seconds"
+                    class="form-control"
+                    placeholder="SS"
+                    min="0"
+                    max="60"
+                  />
+                </div>
+              </div>
+
               <div class="d-flex justify-content-center gap-2 mb-2">
                 <button class="btn btn-outline-primary" onclick="startTimer()">
                   Start Countdown

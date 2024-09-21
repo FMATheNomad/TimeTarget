@@ -5,29 +5,52 @@ let totalDuration; // Menyimpan durasi total timer
 
 function startTimer() {
   const timeInput = document.getElementById("time-input").value;
+  const normalHours = parseInt(document.getElementById("normal-hours").value, 10);
+  const normalMinutes = parseInt(document.getElementById("normal-minutes").value, 10);
+  const normalSeconds = parseInt(document.getElementById("normal-seconds").value, 10);
 
-  if (!timeInput) {
-    alert("Please enter a valid time!");
+  if (timeInput) {
+    const [targetHour, targetMinute] = timeInput.split(":").map(Number);
+
+    let now = new Date();
+    targetTime = new Date();
+    targetTime.setHours(targetHour, targetMinute, 0, 0);
+
+    if (targetTime <= now) {
+      targetTime.setDate(targetTime.getDate() + 1);
+    }
+
+    totalDuration = targetTime - now;
+
+    if (interval) {
+      clearInterval(interval);
+    }
+
+    interval = setInterval(updateCountdown, 1000);
+  } else if (normalHours || normalMinutes || normalSeconds) {
+    startNormalTimer();
+  } else {
+    alert("Please enter a valid time or duration!");
     return;
   }
 
-  localStorage.setItem("targetTime", timeInput);  // Simpan di localStorage
+  localStorage.setItem("targetTime", timeInput);
+}
 
-  const [targetHour, targetMinute] = timeInput.split(":").map(Number);
+function startNormalTimer() {
+  const hours = parseInt(document.getElementById("normal-hours").value, 10);
+  const minutes = parseInt(document.getElementById("normal-minutes").value, 10);
+  const seconds = parseInt(document.getElementById("normal-seconds").value, 10);
 
-  let now = new Date();
-  targetTime = new Date(); // Simpan sebagai variabel global
-  targetTime.setHours(targetHour, targetMinute, 0, 0);
+  const validHours = isNaN(hours) ? 0 : hours;
+  const validMinutes = isNaN(minutes) ? 0 : minutes;
+  const validSeconds = isNaN(seconds) ? 0 : seconds;
 
-  // Jika targetTime sudah lewat hari ini, set ke hari berikutnya
-  if (targetTime <= now) {
-    targetTime.setDate(targetTime.getDate() + 1);
-  }
+  totalDuration = (validHours * 60 * 60 * 1000) + (validMinutes * 60 * 1000) + (validSeconds * 1000);
 
-  // Hitung total durasi dari sekarang sampai target waktu
-  totalDuration = targetTime - now;
+  const now = new Date();
+  targetTime = new Date(now.getTime() + totalDuration);
 
-  // Jika ada timer yang sedang berjalan, hentikan terlebih dahulu
   if (interval) {
     clearInterval(interval);
   }
@@ -35,8 +58,11 @@ function startTimer() {
   interval = setInterval(updateCountdown, 1000);
 }
 
+
+
+
 function updateCountdown() {
-  const currentTime = new Date().getTime();
+  const currentTime = new Date();
   const timeLeft = targetTime - currentTime;
 
   if (timeLeft <= 0) {
@@ -54,6 +80,7 @@ function updateCountdown() {
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
+  // Update tampilan countdown
   document.getElementById("hours").innerHTML = String(hours).padStart(2, "0");
   document.getElementById("minutes").innerHTML = String(minutes).padStart(2, "0");
   document.getElementById("seconds").innerHTML = String(seconds).padStart(2, "0");
@@ -107,16 +134,25 @@ function resetTimer() {
   }
   // Hapus waktu tersimpan dari localStorage
   localStorage.removeItem("targetTime");
+
   // Reset countdown display
   document.getElementById("countdown").innerHTML = "<span id='hours'>00</span>:<span id='minutes'>00</span>:<span id='seconds'>00</span>";
-  // Reset input field
+
+  // Reset input field untuk Clock Timer
   document.getElementById("time-input").value = "";
+  // Reset input field untuk Normal Timer
+  document.getElementById("normal-hours").value = "";
+  document.getElementById("normal-minutes").value = "";
+  document.getElementById("normal-seconds").value = "";
+
   // Hentikan alarm dan sembunyikan tombol stop
   const alarmSound = document.getElementById("alarm-sound");
   alarmSound.pause();
   alarmSound.currentTime = 0;
   document.getElementById("stop-alarm-btn").style.display = "none";
-  resetProgressBar(); // Reset progress bar saat user menekan reset
+
+  // Reset progress bar
+  resetProgressBar();
 }
 
 window.addEventListener("DOMContentLoaded", () => {
